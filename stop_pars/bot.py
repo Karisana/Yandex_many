@@ -10,7 +10,8 @@ from place_pars import *
 from data import *
 from collections import defaultdict
 
-bot = telebot.TeleBot('6100241130:AAGKwSMsv3Gz0ZowQUuN73tIgGVlcBv_7mk')
+# bot = telebot.TeleBot('6100241130:AAGKwSMsv3Gz0ZowQUuN73tIgGVlcBv_7mk')
+bot = telebot.TeleBot('6424489351:AAF97PMhVjedczz4pGLKYeHUvhfokvytS64')
 
 timezone = pytz.timezone('Europe/Moscow')
 current_time = datetime.now(timezone).time().hour
@@ -30,56 +31,6 @@ def del_file(folder_path):
             os.remove(file_path)
             print(f"Файл {file_name} удален.")
 
-
-def info_about_place():
-    txt_files = glob.glob("*.txt")
-
-    radius = {}
-    for file in txt_files:
-
-        if file in file_dict_place:
-            value = file_dict_place[file]
-            name_address = value
-            try:
-                with open(f'{file}', 'r+', encoding='utf-8') as line:
-                    rest_data = line.read().splitlines()
-                    if need_name in rest_data:
-                        data = []
-                        place = rest_data.index(need_name) + 1
-                        data.append(place)
-                        time = current_time
-                        data.append(time)
-                    else:
-                        data = []
-                        place = "отсутствует в рейтинге"
-                        data.append(place)
-                        time = current_time
-                        data.append(time)
-            except Exception as ex:
-                print('->>>>!!!!', ex, '!!!!<<<<-')
-
-            radius[name_address] = data
-        path = file
-        os.remove(path)
-    print('рейтинг записан, файлы удалены')
-    print(radius)
-
-    mess_about_stop_list = []
-    for k, v in radius.items():
-        mess_about_stop_list.append([k, v[0], v[1]])
-    print('..текст mess_about_stop_list записан')
-
-    try:
-        with open(f'day.txt', 'a+', encoding='utf-8') as line:
-            data_text = str(mess_about_stop_list).replace('[', '').replace("'", '').replace(']', '')
-            line.write(f'{data_text}\n')
-        print('Запись дня выполнена')
-    except Exception as ex:
-        print(ex)
-
-    return mess_about_stop_list
-
-    # os.remove(path)
 
 def last_file():
     """ Формирование выдачи для бота по стоп листам кафе.
@@ -114,16 +65,12 @@ def last_file():
         if os.path.isfile(item_path):
             files.append(item)
 
-    for file_name in files:
-        name_address = ''
-        if file_name in file_dict_stop:
-            value = file_dict_stop[file_name]
-            name_address = value
-
+    for name, data_list in cafe_addresses.items():
+        name_address = name
         res = f'Стоп лист {name_address}:'
 
         res_list = []
-        with open(os.path.join(latest_folder, file_name), 'r', encoding='utf-8') as file:
+        with open(os.path.join(latest_folder, name_address), 'r', encoding='utf-8') as file:
             lines = file.readlines()
             res_list.append(lines)
         yield res, res_list
@@ -137,39 +84,39 @@ def count_string_occurrences_in_file(file_path):
     return occurrences
 
 
-def send_mess_about_stop_fow_week():
-    file_list = os.listdir('stop_week')
-    for file_name in file_list:
-        file_path = os.path.join('stop_week', file_name)
-        occurrences = count_string_occurrences_in_file(file_path)
-
-        name_address = ''
-        if file_name in file_dict_stop:
-            value = file_dict_stop[file_name]
-            name_address = value
-
-        res = f' <b> Стоп лист за неделю {name_address}</b>'
-        for id in id_users:
-            time.sleep(1)
-            bot.send_message(chat_id=id, text=res, parse_mode='HTML')
-
-        sorted_occurrences = sorted(occurrences.items(), key=lambda x: x[0])
-        result_mess = ''
-        for value, count in sorted_occurrences:
-
-            if value != '':
-                res = value.strip().replace("'", ''), ' - ', count, ' из 38 проверок.'
-                mess = [str(item) for item in res]
-                result = ''.join(mess)
-                result_mess += f'{result}\n'
-
-        for id in id_users:
-            time.sleep(1)
-            bot.send_message(chat_id=id, text=result_mess)
-
-    del_file('stop_week')
-    del_file('txt')
-    del_file('rating')
+# def send_mess_about_stop_fow_week():
+#     file_list = os.listdir('stop_week')
+#     for file_name in file_list:
+#         file_path = os.path.join('stop_week', file_name)
+#         occurrences = count_string_occurrences_in_file(file_path)
+#
+#         name_address = ''
+#         if file_name in file_dict_stop:
+#             value = file_dict_stop[file_name]
+#             name_address = value
+#
+#         res = f' <b> Стоп лист за неделю {name_address}</b>'
+#         for id in id_users:
+#             time.sleep(1)
+#             bot.send_message(chat_id=id, text=res, parse_mode='HTML')
+#
+#         sorted_occurrences = sorted(occurrences.items(), key=lambda x: x[0])
+#         result_mess = ''
+#         for value, count in sorted_occurrences:
+#
+#             if value != '':
+#                 res = value.strip().replace("'", ''), ' - ', count, ' из 38 проверок.'
+#                 mess = [str(item) for item in res]
+#                 result = ''.join(mess)
+#                 result_mess += f'{result}\n'
+#
+#         for id in id_users:
+#             time.sleep(1)
+#             bot.send_message(chat_id=id, text=result_mess)
+#
+#     del_file('stop_week')
+#     del_file('txt')
+#     del_file('rating')
 
 
 def send_mess_about_stop_list():
@@ -195,25 +142,70 @@ def send_mess_about_stop_list():
         for id in id_users:
             print('->  -> Отправка данных по стоп листам id-пользователя - ', id)
             time.sleep(1)
-            bot.send_message(chat_id=id, text=message, parse_mode='HTML')
+
+            try:
+                bot.send_message(chat_id=id, text=message, parse_mode='HTML')
+            except Exception as ex:
+                print(id, 'не найден в боте')
+
+
+def info_place_parsing(file_name: str):
+    need_name_in_dict = cafe_addresses[file_name][2]
+
+    try:
+        with open(f'{file_name}.txt', 'r+', encoding='utf-8') as line:
+            rest_data = line.read().splitlines()
+            if need_name_in_dict in rest_data:
+                data = []
+                place = rest_data.index(need_name_in_dict) + 1
+                data.append(place)
+                time = current_time
+                data.append(time)
+            else:
+                data = []
+                place = "отсутствует в рейтинге"
+                data.append(place)
+                time = current_time
+                data.append(time)
+
+        # Находим значение этого ключа (списка) под индексом 2
+
+        # Записываем значение в формате строки: ключ, индексовый номер в файле num
+        data_str = f'{file_name} место: {place}'
+        yield data_str
+
+    except Exception as ex:
+        print('->>>>!!!!', ex, '!!!!<<<<-')
 
 
 def send_mess_about_place():
-    info = f'<b>Отправляю место в выдачи по ресторанам {need_name}:</b>  #местовыдачи'
+    message_about_place = ''
+    for key in cafe_addresses.keys():
+        result = info_place_parsing(key)
+        for text in result:
+            total_text = f'{text} \n'
+            message_about_place += total_text
 
-    message_about_place = info_about_place()
+        try:
+            # Удаляем файл после обработки
+            os.remove(f'{key}.txt')
+            print(f'Файл {key}.txt удален.')
+        except Exception as ex:
+            print(f'Не удалось удалить файл {key}.txt:', ex)
 
-    final_text = ''
-    for i in message_about_place:
-        text = f'{i[0]}, место выдачи — {i[1]}.\n'
-        final_text += text
+    info = f'<b>Отправляю место в выдачи.</b>  #местовыдачи'
 
-    print(final_text)
     for id in id_users:
-        bot.send_message(chat_id=id, text=info, parse_mode='HTML')
+        try:
+            bot.send_message(chat_id=id, text=info, parse_mode='HTML')
+        except Exception as ex:
+            print(id, 'не найден в боте')
 
     for id in id_users:
-        bot.send_message(chat_id=id, text=final_text, parse_mode='HTML')
+        try:
+            bot.send_message(chat_id=id, text=message_about_place, parse_mode='HTML')
+        except Exception as ex:
+            print(id, 'не найден в боте')
 
 
 def send_mess_about_rating():
@@ -246,33 +238,42 @@ def send_mess_about_rating():
 
     for id in id_users:
         time.sleep(1)
-        bot.send_message(chat_id=id, text="<b>Отправляю РЕЙТИНГ по точкам:</b>", parse_mode='HTML')
+        try:
+            bot.send_message(chat_id=id, text="<b>Отправляю РЕЙТИНГ:</b>", parse_mode='HTML')
+        except Exception as ex:
+            print(id, 'не найден в боте')
 
-    # Перебор файлов и их удаление
-    for file_name in file_list:
+    # Перебор файлов
+    for file_name in os.listdir(folder_path):
         file_path = os.path.join(folder_path, file_name)
+        print(file_name)
         if os.path.isfile(file_path):
             with open(file_path, 'r') as file:
                 lines = file.readlines()
 
-                # Получение последних двух значений
-                if file_name in file_dict_stop:
-                    value = file_dict_stop[file_name]
-                    name_address = value
+                # Получение последних двух значений для каждого файла
                 last_two_values = [(line.strip()) for line in lines[-2:]]
                 if len(last_two_values) >= 2:
-                    if last_two_values[0] == last_two_values[1]:
-                        mess = f'{name_address} рейтинг не изменился, {last_two_values[1]}, {smile(last_two_values[1])}'
 
+                    if last_two_values[0] == last_two_values[1]:
+                        mess = f'<b>{file_name}</b> рейтинг не изменился, {last_two_values[1]}, {smile(last_two_values[1])}'
                     else:
-                        mess = f'{name_address} рейтинг изменился: был {last_two_values[0]}, стал {last_two_values[1]}, ' \
+                        mess = f'<b>{file_name}</b> рейтинг изменился: был {last_two_values[0]}, стал {last_two_values[1]}, ' \
                                f'{smile(last_two_values[1])}'
-                    for id in id_users:
-                        time.sleep(1)
-                        bot.send_message(chat_id=id, text=mess)
+
+                for id in id_users:
+                    time.sleep(0.5)
+                    try:
+                        bot.send_message(chat_id=id, text=mess, parse_mode='HTML')
+                    except Exception as ex:
+                        print(id, 'не найден в боте')
 
                 else:
-                    mess = f' {name_address} {last_two_values[0]} {smile(last_two_values[0])}'
+                    mess = f' <b>{file_name}</b> {last_two_values[0]} {smile(last_two_values[0])}'
+                    print(mess)
                     for id in id_users:
                         time.sleep(0.5)
-                        bot.send_message(chat_id=id, text=mess)
+                        try:
+                            bot.send_message(chat_id=id, text=mess, parse_mode='HTML')
+                        except Exception as ex:
+                            print(id, 'не найден в боте')

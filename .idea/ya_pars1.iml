@@ -6,8 +6,9 @@
       <excludeFolder url="file://$MODULE_DIR$/stop_pars/stop_week" />
       <excludeFolder url="file://$MODULE_DIR$/stop_pars/txt" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
+      <excludeFolder url="file://$MODULE_DIR$/venv" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.11 (ya_pars1)" jdkType="Python SDK" />
+    <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>
